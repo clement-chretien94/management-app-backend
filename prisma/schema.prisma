@@ -1,0 +1,47 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id                 String @id @default(uuid())
+  firstName          String
+  lastName           String
+  email              String @unique
+  password           String
+  eveningRoutineTime String @default("20:00")
+
+  timeBlocks TimeBlock[]
+  microTasks MicroTask[]
+}
+
+model TimeBlock {
+  id        String   @id @default(uuid())
+  title     String
+  startTime DateTime
+  endTime   DateTime
+  isLocked  Boolean  @default(false)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+}
+
+model MicroTask {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  isCompleted Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+}
