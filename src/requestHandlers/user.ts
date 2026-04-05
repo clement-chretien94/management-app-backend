@@ -14,7 +14,7 @@ const saltRounds = 12;
 export const signup = async (req: Request, res: Response) => {
   assert(req.body, UserCreationData);
   try {
-    const user = await prisma.user.create({
+    await prisma.user.create({
       data: {
         firstName: req.body.firstName,
         lastName: req.body.lastName,
@@ -23,8 +23,7 @@ export const signup = async (req: Request, res: Response) => {
       },
       omit: { password: true },
     });
-    res.json(user);
-    res.status(201);
+    res.status(201).json({ message: "User created successfully" });
   } catch (err) {
     console.log(err);
     if (err instanceof PrismaClientKnownRequestError && err.code === "P2002") {
@@ -34,7 +33,7 @@ export const signup = async (req: Request, res: Response) => {
   }
 };
 
-export const signin = async (req: Request, res: Response) => {
+export const login = async (req: Request, res: Response) => {
   assert(req.body, UserConnectData);
   const user = await prisma.user.findUnique({
     where: {
@@ -46,15 +45,25 @@ export const signin = async (req: Request, res: Response) => {
     if (!process.env.JWT_SECRET) {
       throw new Error("JWT_SECRET is not defined");
     }
-    const jwt = sign(user.id.toString(), process.env.JWT_SECRET);
-    const { password, ...userWithoutPassword } = user;
-    res.json({ user: userWithoutPassword, jwt });
-    // console.log("JWT:", jwt);
-    res.status(201);
+    const jwtToken = sign(user.id.toString(), process.env.JWT_SECRET);
+
+    res.cookie("token", jwtToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    });
+
+    res.status(200).json({ message: "Login successful" });
   } else {
     throw new NotFoundError("Invalid email or password");
   }
 };
+
+export const logout = (req: AuthRequest, res: Response) => {
+  res.clearCookie("token");
+  res.status(200).json({ message: "Logout successful" });
+}
 
 export const getConnectedUser = async (req: AuthRequest, res: Response) => {
   if (req.auth) {
@@ -70,6 +79,16 @@ export const auth_client = [
   expressjwt({
     secret: process.env.JWT_SECRET as string,
     algorithms: ["HS256"],
+    getToken: (req) => {
+      if (req.cookies?.token) {
+        return req.cookies.token;
+      }
+      const authHeader = req.headers.authorization;
+      if (authHeader?.startsWith("Bearer ")) {
+        return authHeader.slice("Bearer ".length);
+      }
+      return null;
+    },
   }),
   async (req: AuthRequest, res: Response, next: NextFunction) => {
     const user = await prisma.user.findUnique({

@@ -1,6 +1,7 @@
 import "dotenv/config";
-import express, { Request, Response, NextFunction }  from "express";
+import express, { Request, Response, NextFunction, Router }  from "express";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 import { HttpError } from "./error";
 import { assert, object, optional, string, StructError } from 'superstruct';
 
@@ -11,12 +12,15 @@ import * as microtask from "./requestHandlers/microtask";
 const app = express();
 const port = 3000;
 
-app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+    exposedHeaders: ["X-Total-Count"],
+  })
+);
 
-app.use((req: Request, res: Response, next: NextFunction) => {
-  res.header("Access-Control-Expose-Headers", "X-Total-Count");
-  next();
-});
+app.use(cookieParser());
 
 const ReqParams = object({
   timeblock_id: optional(string()),
@@ -34,11 +38,17 @@ app.get('/', (req: Request, res: Response) => {
   res.send('Welcome to the management app backend!');
 });
 
-// User routes
-app.post("/signup", user.signup);
-app.post("/signin", user.signin);
+// Auth routes
+const authRouter = Router();
+authRouter.post("/signup", user.signup);
+authRouter.post("/login", user.login);
+authRouter.post("/logout", user.logout);
+app.use("/auth", authRouter);
 
-app.get("/user", user.auth_client, user.getConnectedUser);
+// User routes
+const userRouter = Router();
+userRouter.get("/me", user.auth_client, user.getConnectedUser);
+app.use("/users", userRouter);
 
 // Time block routes
 app.route("/timeblocks")
