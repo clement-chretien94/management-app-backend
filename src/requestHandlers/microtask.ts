@@ -9,6 +9,7 @@ import { MicroTaskCreationData, MicroTaskUpdateData } from "../validation/microt
 export const getMicroTasks = async (req: AuthRequest, res: Response) => {
   const microTasks = await prisma.microTask.findMany({
     where: { userId: req.auth?.id },
+    orderBy: { createdAt: "asc" },
   });
   res.json(microTasks);
 };
@@ -19,7 +20,6 @@ export const createMicroTask = async (req: AuthRequest, res: Response) => {
     const microTask = await prisma.microTask.create({
       data: {
         title: req.body.title,
-        description: req.body.description,
         user: { connect: { id: req.auth?.id } },
       },
     });
@@ -38,7 +38,6 @@ export const updateMicroTask = async (req: AuthRequest, res: Response) => {
       where: { id: req.params.microtask_id as string, userId: req.auth?.id },
       data: {
         title: req.body.title,
-        description: req.body.description,
         isCompleted: req.body.isCompleted,
       },
     });
