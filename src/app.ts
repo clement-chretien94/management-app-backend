@@ -56,6 +56,10 @@ app.route("/timeblocks")
   .get(timeblock.getTimeBlocks)
   .post(timeblock.createTimeBlock);
 
+app.route("/timeblocks/lock")
+  .all(user.auth_client)
+  .put(timeblock.lockTomorrowTimeBlocks);
+
 app.route("/timeblocks/:timeblock_id")
   .all(user.auth_client)
   .all(validateParams)
