@@ -21,6 +21,7 @@ export const createTimeBlock = async (req: AuthRequest, res: Response) => {
         title: req.body.title,
         startTime: new Date(req.body.startTime),
         endTime: new Date(req.body.endTime),
+        category: req.body.categoryId ? { connect: { id: req.body.categoryId } } : undefined,
         user: { connect: { id: req.auth?.id } },
       },
     });
@@ -42,6 +43,7 @@ export const updateTimeBlock = async (req: AuthRequest, res: Response) => {
         startTime: new Date(req.body.startTime),
         endTime: new Date(req.body.endTime),
         isLocked: req.body.isLocked,
+        category: req.body.categoryId ? { connect: { id: req.body.categoryId } } : undefined,
       },
     });
     res.json(timeBlock);

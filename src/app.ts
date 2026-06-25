@@ -8,6 +8,7 @@ import { assert, object, optional, string, StructError } from 'superstruct';
 import * as user from "./requestHandlers/user";
 import * as timeblock from "./requestHandlers/timeblock";
 import * as microtask from "./requestHandlers/microtask";
+import * as category from "./requestHandlers/category";
 
 const app = express();
 const port = 3000;
@@ -25,6 +26,7 @@ app.use(cookieParser());
 const ReqParams = object({
   timeblock_id: optional(string()),
   microtask_id: optional(string()),
+  category_id: optional(string()),
 });
 
 const validateParams = (req: Request, res: Response, next: NextFunction) => {
@@ -65,6 +67,18 @@ app.route("/timeblocks/:timeblock_id")
   .all(validateParams)
   .put(timeblock.updateTimeBlock)
   .delete(timeblock.deleteTimeBlock);
+
+// Category routes
+app.route("/categories")
+  .all(user.auth_client)
+  .get(category.getCategories)
+  .post(category.createCategory);
+
+app.route("/categories/:category_id")
+  .all(user.auth_client)
+  .all(validateParams)
+  .put(category.updateCategory)
+  .delete(category.deleteCategory);
 
 // Micro task routes
 app.route("/microtasks")

@@ -22,6 +22,7 @@ model User {
 
   timeBlocks TimeBlock[]
   microTasks MicroTask[]
+  categories Category[]
 }
 
 model TimeBlock {
@@ -30,6 +31,9 @@ model TimeBlock {
   startTime DateTime
   endTime   DateTime
   isLocked  Boolean  @default(false)
+
+  categoryId String?
+  category   Category? @relation(fields: [categoryId], references: [id])
 
   userId String
   user   User   @relation(fields: [userId], references: [id])
@@ -40,6 +44,17 @@ model MicroTask {
   title       String
   isCompleted Boolean  @default(false)
   createdAt   DateTime @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+}
+
+model Category {
+  id    String @id @default(uuid())
+  title String @unique
+  color String @default("#432dd7")
+
+  timeBlocks TimeBlock[]
 
   userId String
   user   User   @relation(fields: [userId], references: [id])
