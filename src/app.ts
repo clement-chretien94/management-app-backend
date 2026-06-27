@@ -77,6 +77,7 @@ app.route("/categories")
 app.route("/categories/:category_id")
   .all(user.auth_client)
   .all(validateParams)
+  .get(category.getCategory)
   .put(category.updateCategory)
   .delete(category.deleteCategory);
 

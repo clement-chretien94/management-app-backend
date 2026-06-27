@@ -13,6 +13,21 @@ export const getCategories = async (req: AuthRequest, res: Response) => {
   res.json(categories);
 };
 
+export const getCategory = async (req: AuthRequest, res: Response) => {
+  try {
+    const category = await prisma.category.findUnique({
+      where: { id: req.params.category_id as string, userId: req.auth?.id },
+    });
+    if (!category) {
+      throw new NotFoundError("Category not found");
+    }
+    res.json(category);
+  } catch (err) {
+    console.log(err);
+    throw err;
+  }
+};
+
 export const createCategory = async (req: AuthRequest, res: Response) => {
   assert(req.body, CategoryCreationData);
   try {
