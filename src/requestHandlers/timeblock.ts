@@ -1,5 +1,5 @@
 import { prisma } from "../db";
-import { Request, Response } from "express";
+import { Response } from "express";
 import { Request as AuthRequest } from "express-jwt";
 import { NotFoundError } from "../error";
 import { PrismaClientKnownRequestError } from "../generated/prisma/internal/prismaNamespace";
@@ -9,6 +9,7 @@ import { TimeBlockCreationData, TimeBlockUpdateData } from "../validation/timebl
 export const getTimeBlocks = async (req: AuthRequest, res: Response) => {
   const timeBlocks = await prisma.timeBlock.findMany({
     where: { userId: req.auth?.id },
+    include: { category: true },
   });
   res.json(timeBlocks);
 };
