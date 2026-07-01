@@ -14,6 +14,21 @@ export const getTimeBlocks = async (req: AuthRequest, res: Response) => {
   res.json(timeBlocks);
 };
 
+export const getTimeBlock = async (req: AuthRequest, res: Response) => {
+  try {
+    const timeBlock = await prisma.timeBlock.findUnique({
+      where: { id: req.params.timeblock_id as string, userId: req.auth?.id },
+    });
+    if (!timeBlock) {
+      throw new NotFoundError("Time block not found");
+    }
+    res.json(timeBlock);
+  } catch (err) {
+    console.log(err);
+    throw err;
+  }
+};
+
 export const createTimeBlock = async (req: AuthRequest, res: Response) => {
   assert(req.body, TimeBlockCreationData);
   try {

@@ -65,6 +65,7 @@ app.route("/timeblocks/lock")
 app.route("/timeblocks/:timeblock_id")
   .all(user.auth_client)
   .all(validateParams)
+  .get(timeblock.getTimeBlock)
   .put(timeblock.updateTimeBlock)
   .delete(timeblock.deleteTimeBlock);
 
